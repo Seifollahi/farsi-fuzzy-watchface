@@ -95,7 +95,8 @@ def generate_all_screenshots():
         ("aplite", 144, 168),
         ("basalt", 144, 168),
         ("diorite", 144, 168),
-        ("chalk", 180, 180)
+        ("chalk", 180, 180),
+        ("emery", 200, 228)
     ]
     
     screens = [
