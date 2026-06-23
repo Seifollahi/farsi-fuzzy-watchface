@@ -1,0 +1,11 @@
+build/
+node_modules/
+serve/
+.pebble-sdk/
+*.pbw
+*.o
+*.elf
+*.resball
+*.pbpack
+*.map
+farsi_chars.json
