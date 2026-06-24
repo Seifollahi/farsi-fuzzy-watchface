@@ -4,9 +4,10 @@ A stunning, native Farsi fuzzy time watchface for Pebble smartwatches, written f
 
 ## Features
 
-- **Calligraphic Typography:** Custom-built using the massive, interlocking `Lalezar` and `Vazirmatn-Black` font engine for a premium, artistic look on your wrist.
-- **Dynamic Fuzzy Time:** Reads out the time exactly how Farsi speakers naturally say it (e.g., "ساعت ده و نیم", "یک ربع به شش").
+- **Calligraphic Typography:** Custom-built using the `Vazirmatn-Black` font with dual-size rendering for a premium, editorial look on your wrist.
+- **Conversational Farsi:** Reads the time exactly how Farsi speakers naturally say it — "الان تقریبا ساعت ده و ربعه" — with colloquial phrasing and suffixes.
 - **Multiple Accuracies:** Choose between 15-minute intervals, 30-minute intervals, exact hours, or even loose daily periods ("صبحه").
+- **Smart Auto-Wrapping:** Longer phrases automatically flow across multiple lines, keeping everything within the screen.
 - **Anti-Aliasing:** Harnesses Pebble's hardware and a custom grayscale layout generator to create silky smooth curves—a rarity on Pebble's 1-bit or 2-bit color space!
 - **Theme Toggle:** Instantly switch between **Dark Mode** (White on Black) and **Light Mode** (Black on White) directly from the Pebble app configuration page! No memory overhead.
 
@@ -20,6 +21,11 @@ A stunning, native Farsi fuzzy time watchface for Pebble smartwatches, written f
 </div>
 
 ## Changelog
+
+### v3.0.0
+- **Redesign:** Complete typography overhaul with dual-size font rendering — small prefix ("الان تقریبا ساعت") and large bold time ("ده و ربعه").
+- **Enhancement:** Updated all 57 phrases to use natural, conversational Farsi phrasing with colloquial suffixes (e.g., "ده‌ه", "نیمه", "ربعه").
+- **Enhancement:** Smart auto-wrapping engine automatically flows long phrases across multiple lines.
 
 ### v2.8.0
 - **Feature:** Full Light/Dark theme toggle in Pebble Config app.

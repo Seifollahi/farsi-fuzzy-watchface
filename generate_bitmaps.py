@@ -13,100 +13,98 @@ next_hours = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0]
 os.makedirs("resources/images", exist_ok=True)
 
 width, height = 144, 168
-bg_color, text_color = (0,0,0), (255,255,255)
 
 font_path = "resources/fonts/Vazirmatn-Black.ttf"
 try:
-    font_header = ImageFont.truetype(font_path, 20)
-    font_saat = ImageFont.truetype(font_path, 54)
-    font_hour = ImageFont.truetype(font_path, 48)
-    font_mod = ImageFont.truetype(font_path, 56)
-    font_conn = ImageFont.truetype(font_path, 22)
-    font_huge = ImageFont.truetype(font_path, 60)
-    font_med = ImageFont.truetype(font_path, 36)
+    font_small = ImageFont.truetype(font_path, 22)
+    font_large = ImageFont.truetype(font_path, 38)
 except IOError:
     print("Font not found.")
     exit(1)
 
 def shape(text):
-    configuration = {
+    reshaper = arabic_reshaper.ArabicReshaper(configuration={
         'delete_harakat': True,
         'support_ligatures': True,
-    }
-    reshaper = arabic_reshaper.ArabicReshaper(configuration=configuration)
+    })
     return get_display(reshaper.reshape(text))
 
-def draw_header(draw):
-    h_text = shape("الان تقریبا")
-    hb = draw.textbbox((0, 0), h_text, font=font_header)
-    draw.text((width - (hb[2]-hb[0]) - 5, -5), h_text, font=font_header, fill=text_color)
+def draw_right_aligned(draw, text, font, y, margin=8):
+    """Draw text right-aligned, returns bounding box height."""
+    shaped = shape(text)
+    bb = draw.textbbox((0, 0), shaped, font=font)
+    w = bb[2] - bb[0]
+    h = bb[3] - bb[1]
+    x = width - w - margin
+    if x < 0: x = 0
+    draw.text((x, y), shaped, font=font, fill=255)
+    return h
+
+def draw_large_auto_wrap(draw, text, font, start_y, margin=8):
+    """Draw large text right-aligned, auto-wrapping if too wide."""
+    shaped = shape(text)
+    bb = draw.textbbox((0, 0), shaped, font=font)
+    text_w = bb[2] - bb[0]
+    
+    if text_w <= width - margin * 2:
+        # Fits on one line
+        draw_right_aligned(draw, text, font, start_y, margin)
+    else:
+        # Split into words and distribute across lines
+        words = text.split()
+        lines = []
+        current_line = []
+        
+        for word in words:
+            test_line = " ".join(current_line + [word])
+            test_shaped = shape(test_line)
+            bb = draw.textbbox((0, 0), test_shaped, font=font)
+            if bb[2] - bb[0] <= width - margin * 2:
+                current_line.append(word)
+            else:
+                if current_line:
+                    lines.append(" ".join(current_line))
+                current_line = [word]
+        if current_line:
+            lines.append(" ".join(current_line))
+        
+        y = start_y
+        for line in lines:
+            draw_right_aligned(draw, line, font, y, margin)
+            y += 47  # line spacing for 38pt font
 
 def create_image(filename, ftype, hour_str="", mod_str=""):
-    img = Image.new('RGB', (width, height), color=bg_color)
+    img = Image.new('L', (width, height), color=0)
     draw = ImageDraw.Draw(img)
-    draw_header(draw)
     
     if ftype in ["exact", "half", "quarter"]:
-        # 1. "ساعت"
-        saat_text = shape("ساعت")
-        sb = draw.textbbox((0, 0), saat_text, font=font_saat)
-        saat_w = sb[2]-sb[0]
-        saat_x = width - saat_w - 5
-        saat_y = 20
-        draw.text((saat_x, saat_y), saat_text, font=font_saat, fill=text_color)
-        
-        # 2. Hour
-        hour_text = shape(hour_str)
-        hob = draw.textbbox((0, 0), hour_text, font=font_hour)
-        hour_w = hob[2]-hob[0]
-        hour_x = width - hour_w - 5
-        hour_y = saat_y + 40
+        # Line 1 (small): الان تقریبا
+        draw_right_aligned(draw, "الان تقریبا", font_small, 8)
+        # Line 2 (small): ساعت
+        draw_right_aligned(draw, "ساعت", font_small, 38)
         
         if ftype == "exact":
-            # Just shift hour down to be centered in bottom space
-            hour_x = width - hour_w - 20
-            hour_y = saat_y + 60
-            draw.text((hour_x, hour_y), hour_text, font=font_huge, fill=text_color)
-        else:
-            # Shift slightly right if it's quarter/half to leave room
-            draw.text((hour_x, hour_y), hour_text, font=font_hour, fill=text_color)
-            
-            # 3. Modifier (نیم or ربع)
-            mod_text = shape(mod_str)
-            mb = draw.textbbox((0, 0), mod_text, font=font_mod)
-            mod_w = mb[2]-mb[0]
-            mod_x = hour_x - mod_w - 2
-            if mod_x < 0: mod_x = 0 # Prevent clipping
-            mod_y = saat_y + 35
-            draw.text((mod_x, mod_y), mod_text, font=font_mod, fill=text_color)
-            
-            # 4. Connector "و"
-            conn_text = shape("و")
-            conn_x = mod_x + (10 if mod_str == "نیم" else 25)
-            conn_y = mod_y - (8 if mod_str == "نیم" else 0)
-            draw.text((conn_x, conn_y), conn_text, font=font_conn, fill=text_color)
+            # Large: just the hour + ه suffix
+            draw_large_auto_wrap(draw, hour_str + "ه", font_large, 68)
+        elif ftype == "half":
+            # Large: hour و نیمه
+            draw_large_auto_wrap(draw, hour_str + " و نیمه", font_large, 68)
+        elif ftype == "quarter":
+            # Large: hour و ربعه
+            draw_large_auto_wrap(draw, hour_str + " و ربعه", font_large, 68)
 
     elif ftype == "tonext":
-        t1 = shape("یه ربع")
-        b1 = draw.textbbox((0,0), t1, font=font_med)
-        draw.text((width - (b1[2]-b1[0]) - 10, 25), t1, font=font_med, fill=text_color)
-        
-        t2 = shape("مونده به")
-        b2 = draw.textbbox((0,0), t2, font=font_med)
-        draw.text((width - (b2[2]-b2[0]) - 20, 65), t2, font=font_med, fill=text_color)
-        
-        t3 = shape(hour_str)
-        b3 = draw.textbbox((0,0), t3, font=font_huge)
-        draw.text((width - (b3[2]-b3[0]) - 5, 105), t3, font=font_huge, fill=text_color)
+        # Line 1 (small): الان تقریبا
+        draw_right_aligned(draw, "الان تقریبا", font_small, 8)
+        # Large: یه ربع به hour
+        draw_large_auto_wrap(draw, "یه ربع به " + hour_str, font_large, 48)
         
     elif ftype == "single":
-        t1 = shape(hour_str)
-        b1 = draw.textbbox((0,0), t1, font=font_huge)
-        w1 = b1[2]-b1[0]
-        h1 = b1[3]-b1[1]
-        draw.text(((width - w1)//2, 40 + (128-h1)//2), t1, font=font_huge, fill=text_color)
+        # Line 1 (small): الان تقریبا
+        draw_right_aligned(draw, "الان تقریبا", font_small, 8)
+        # Large: single word centered
+        draw_large_auto_wrap(draw, hour_str, font_large, 68)
 
-    img = img.convert('L')
     img.save(filename)
 
 resources = []
@@ -135,8 +133,8 @@ to_next_ids = []
 
 for i in range(12):
     exact_ids.append(add_res(f"IMG_EXACT_{i}", "exact", hours_farsi[i]))
-    quarter_ids.append(add_res(f"IMG_QUARTER_{i}", "quarter", hours_farsi[i], "ربع"))
-    half_ids.append(add_res(f"IMG_HALF_{i}", "half", hours_farsi[i], "نیم"))
+    quarter_ids.append(add_res(f"IMG_QUARTER_{i}", "quarter", hours_farsi[i]))
+    half_ids.append(add_res(f"IMG_HALF_{i}", "half", hours_farsi[i]))
     to_next_ids.append(add_res(f"IMG_TONEXT_{i}", "tonext", hours_farsi[next_hours[i]]))
 
 half_day_ids = [add_res("IMG_HALFDAY_0", "single", "صبحه"), add_res("IMG_HALFDAY_1", "single", "شبه")]
@@ -184,4 +182,4 @@ data['pebble']['resources']['media'] = resources
 with open('package.json', 'w') as f:
     json.dump(data, f, indent=2)
 
-print("Generated full interwoven bitmaps!")
+print(f"Generated {len(resources)} bitmaps with new multi-size layout!")

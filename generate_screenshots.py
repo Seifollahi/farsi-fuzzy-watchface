@@ -35,4 +35,16 @@ for src, dest, light_theme in selections:
     img.save(os.path.join(out_dir, dest))
     print(f"Generated {dest}")
 
+    # The user specifically requested 200x228 white theme pictures
+    if light_theme:
+        # Create a new 200x228 white canvas
+        padded_img = Image.new("L", (200, 228), color=255)
+        # Paste the 144x168 image centered on the 200x228 canvas
+        # x_offset = (200 - 144) // 2 = 28
+        # y_offset = (228 - 168) // 2 = 30
+        padded_img.paste(img, (28, 30))
+        padded_dest = dest.replace(".png", "_200x228.png")
+        padded_img.save(os.path.join(out_dir, padded_dest))
+        print(f"Generated {padded_dest}")
+
 print("Done generating App Store screenshots.")
