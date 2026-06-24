@@ -1,23 +1,58 @@
 #include <pebble.h>
-#include "farsi_strings.h"
+#include "farsi_bitmaps.h"
 
 #define PERSIST_KEY_ACCURACY 1
+#define PERSIST_KEY_THEME_COLOR 2
 #define DEFAULT_ACCURACY ACCURACY_QUARTER
+#define DEFAULT_THEME 0
 
 static Window *s_main_window;
-static TextLayer *s_header_layer;
-static TextLayer *s_main_layer;
-static GFont s_header_font;
-static GFont s_main_font;
+static BitmapLayer *s_main_layer;
+static GBitmap *s_current_bitmap = NULL;
 static int s_accuracy;
+static int s_theme_color;
 
-// Get time-of-day period index (0-4) for 5-period mode
 static int get_period(int hour) {
-  if (hour >= 5 && hour <= 11) return 0;       // صبح morning
-  else if (hour >= 12 && hour <= 13) return 1;  // ظهر noon
-  else if (hour >= 14 && hour <= 16) return 2;  // بعدازظهر afternoon
-  else if (hour >= 17 && hour <= 19) return 3;  // عصر evening
-  else return 4;                                 // شب night
+  if (hour >= 5 && hour <= 11) return 0;
+  else if (hour >= 12 && hour <= 13) return 1;
+  else if (hour >= 14 && hour <= 16) return 2;
+  else if (hour >= 17 && hour <= 19) return 3;
+  else return 4;
+}
+
+static void invert_bitmap(GBitmap *bmp) {
+  uint8_t *data = gbitmap_get_data(bmp);
+  uint16_t row_size_bytes = gbitmap_get_bytes_per_row(bmp);
+  GRect bounds = gbitmap_get_bounds(bmp);
+  GBitmapFormat format = gbitmap_get_format(bmp);
+  
+  if (format == GBitmapFormat1Bit) {
+    for (int y = 0; y < bounds.size.h; y++) {
+      for (int x = 0; x < row_size_bytes; x++) {
+        data[y * row_size_bytes + x] = ~data[y * row_size_bytes + x];
+      }
+    }
+  } else if (format == GBitmapFormat8Bit) {
+    for (int y = 0; y < bounds.size.h; y++) {
+      for (int x = 0; x < row_size_bytes; x++) {
+        data[y * row_size_bytes + x] ^= 0b00111111; // Invert RGB bits, keep Alpha
+      }
+    }
+  } else {
+    // Palette formats: 1BitPalette, 2BitPalette, 4BitPalette, 8BitPalette
+    GColor *palette = gbitmap_get_palette(bmp);
+    if (palette) {
+      int num_colors = 0;
+      if (format == GBitmapFormat1BitPalette) num_colors = 2;
+      else if (format == GBitmapFormat2BitPalette) num_colors = 4;
+      else if (format == GBitmapFormat4BitPalette) num_colors = 16;
+      else num_colors = 256; // Fallback for 8BitPalette if it exists
+      
+      for (int i = 0; i < num_colors; i++) {
+        palette[i].argb ^= 0b00111111; // Invert RGB bits, keep Alpha
+      }
+    }
+  }
 }
 
 static void update_time() {
@@ -28,7 +63,7 @@ static void update_time() {
   int min = tick_time->tm_min;
   int hour_12 = hour % 12;
 
-  const char *main_text = "";
+  uint32_t current_res_id = 0;
 
   switch (s_accuracy) {
     case ACCURACY_QUARTER: {
@@ -38,68 +73,55 @@ static void update_time() {
       else if (min <= 37) bucket = 2;
       else if (min <= 52) bucket = 3;
       else { bucket = 0; hour_12 = (hour_12 + 1) % 12; }
-      main_text = FARSI_QUARTER[hour_12][bucket];
+      current_res_id = FARSI_QUARTER[hour_12][bucket];
       break;
     }
     case ACCURACY_HALF: {
       int bucket = (min <= 15 || min >= 46) ? 0 : 1;
       if (min >= 46) hour_12 = (hour_12 + 1) % 12;
-      main_text = FARSI_HALF[hour_12][bucket];
+      current_res_id = FARSI_HALF[hour_12][bucket];
       break;
     }
     case ACCURACY_HOUR: {
       if (min >= 30) hour_12 = (hour_12 + 1) % 12;
-      main_text = FARSI_HOUR[hour_12];
+      current_res_id = FARSI_HOUR[hour_12];
       break;
     }
     case ACCURACY_HALF_DAY: {
-      main_text = FARSI_HALF_DAY[hour >= 12 ? 1 : 0];
+      current_res_id = FARSI_HALF_DAY[hour >= 12 ? 1 : 0];
       break;
     }
     case ACCURACY_DAY_NIGHT: {
-      main_text = FARSI_DAY_NIGHT[(hour >= 6 && hour < 18) ? 0 : 1];
+      current_res_id = FARSI_DAY_NIGHT[(hour >= 6 && hour < 18) ? 0 : 1];
       break;
     }
     case ACCURACY_PERIOD: {
-      main_text = FARSI_PERIOD[get_period(hour)];
+      current_res_id = FARSI_PERIOD[get_period(hour)];
       break;
     }
     default:
-      main_text = FARSI_QUARTER[hour_12][0];
+      current_res_id = FARSI_QUARTER[hour_12][0];
       break;
   }
 
-  // Set header
-  text_layer_set_text(s_header_layer, FARSI_HEADER);
+  // Swap out bitmap
+  if (s_current_bitmap) {
+    gbitmap_destroy(s_current_bitmap);
+  }
   
-  // Set main text
-  text_layer_set_text(s_main_layer, main_text);
-
-  // Vertically center main text below header
-  Layer *window_layer = window_get_root_layer(s_main_window);
-  GRect bounds = layer_get_bounds(window_layer);
+  s_current_bitmap = gbitmap_create_with_resource(current_res_id);
   
-  // Header takes top ~40px
-  int header_h = 45;
-  int main_area_h = bounds.size.h - header_h;
+  if (s_theme_color == 1) {
+    invert_bitmap(s_current_bitmap);
+  }
   
-  GSize text_size = graphics_text_layout_get_content_size(
-      main_text, s_main_font,
-      GRect(0, 0, bounds.size.w, main_area_h),
-      GTextOverflowModeWordWrap, GTextAlignmentRight);
-  
-  int y_offset = header_h + (main_area_h - text_size.h) / 2;
-  if (y_offset < header_h) y_offset = header_h;
-  
-  layer_set_frame(text_layer_get_layer(s_main_layer),
-      GRect(0, y_offset, bounds.size.w, bounds.size.h - y_offset));
+  bitmap_layer_set_bitmap(s_main_layer, s_current_bitmap);
 }
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   update_time();
 }
 
-// AppMessage: receive accuracy setting from companion app
 static void inbox_received_callback(DictionaryIterator *iter, void *context) {
   Tuple *accuracy_tuple = dict_find(iter, MESSAGE_KEY_AccuracyLevel);
   if (accuracy_tuple) {
@@ -108,53 +130,44 @@ static void inbox_received_callback(DictionaryIterator *iter, void *context) {
     persist_write_int(PERSIST_KEY_ACCURACY, s_accuracy);
     update_time();
   }
+
+  Tuple *theme_tuple = dict_find(iter, MESSAGE_KEY_ThemeColor);
+  if (theme_tuple) {
+    s_theme_color = theme_tuple->value->uint8;
+    persist_write_int(PERSIST_KEY_THEME_COLOR, s_theme_color);
+    update_time();
+  }
 }
 
 static void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
-  window_set_background_color(window, GColorBlack);
-
-  // Load fonts
-  s_header_font = fonts_load_custom_font(
-      resource_get_handle(RESOURCE_ID_FONT_VAZIR_24));
-  s_main_font = fonts_load_custom_font(
-      resource_get_handle(RESOURCE_ID_FONT_VAZIR_BOLD_38));
-
-  // Header layer: "الان تقریبا" — top right
-  s_header_layer = text_layer_create(
-      GRect(0, 5, bounds.size.w - 5, 35));
-  text_layer_set_background_color(s_header_layer, GColorClear);
-  text_layer_set_text_color(s_header_layer, GColorWhite);
-  text_layer_set_text_alignment(s_header_layer, GTextAlignmentRight);
-  text_layer_set_font(s_header_layer, s_header_font);
-  layer_add_child(window_layer, text_layer_get_layer(s_header_layer));
-
-  // Main layer: time text — large, right-aligned, below header
-  s_main_layer = text_layer_create(
-      GRect(0, 40, bounds.size.w, bounds.size.h - 45));
-  text_layer_set_background_color(s_main_layer, GColorClear);
-  text_layer_set_text_color(s_main_layer, GColorWhite);
-  text_layer_set_text_alignment(s_main_layer, GTextAlignmentRight);
-  text_layer_set_overflow_mode(s_main_layer, GTextOverflowModeWordWrap);
-  text_layer_set_font(s_main_layer, s_main_font);
-  layer_add_child(window_layer, text_layer_get_layer(s_main_layer));
+  window_set_background_color(window, GColorWhite); // Set white BG, so if bitmap is transparent, it's white. Actually, we should probably set it depending on theme, but bitmap covers whole screen so it doesn't matter.
+  
+  s_main_layer = bitmap_layer_create(bounds);
+  bitmap_layer_set_compositing_mode(s_main_layer, GCompOpSet);
+  layer_add_child(window_layer, bitmap_layer_get_layer(s_main_layer));
 }
 
 static void main_window_unload(Window *window) {
-  text_layer_destroy(s_header_layer);
-  text_layer_destroy(s_main_layer);
-  fonts_unload_custom_font(s_header_font);
-  fonts_unload_custom_font(s_main_font);
+  bitmap_layer_destroy(s_main_layer);
+  if (s_current_bitmap) {
+    gbitmap_destroy(s_current_bitmap);
+  }
 }
 
 static void init() {
-  // Load persisted accuracy or default
   if (persist_exists(PERSIST_KEY_ACCURACY)) {
     s_accuracy = persist_read_int(PERSIST_KEY_ACCURACY);
   } else {
     s_accuracy = DEFAULT_ACCURACY;
+  }
+
+  if (persist_exists(PERSIST_KEY_THEME_COLOR)) {
+    s_theme_color = persist_read_int(PERSIST_KEY_THEME_COLOR);
+  } else {
+    s_theme_color = DEFAULT_THEME;
   }
 
   s_main_window = window_create();
@@ -164,14 +177,10 @@ static void init() {
   });
   window_stack_push(s_main_window, true);
 
-  // Register tick handler
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
-
-  // Register AppMessage
   app_message_register_inbox_received(inbox_received_callback);
   app_message_open(64, 64);
 
-  // Show time immediately
   update_time();
 }
 

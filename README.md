@@ -1,44 +1,51 @@
-# Farsi Fuzzy Time (ساعت فازی فارسی)
+# Farsi Fuzzy Watchface
 
-![Screenshot](screenshots/preview.png)
-
-Welcome to the **first-ever Farsi watchface** for the Pebble community! This isn't just an artistic, minimalist design—it's a lifestyle change. Instead of stressing over every minute and second, Farsi Fuzzy Time gives you the time the way humans actually talk: "It's almost noon" or "It's a quarter to twelve."
+A stunning, native Farsi fuzzy time watchface for Pebble smartwatches, written from the ground up for maximum visual impact and cultural authenticity.
 
 ## Features
-- **6 Configurable Accuracy Levels**: Choose how connected to the clock you want to be:
-  1. **Quarter Hour (ربع ساعت)**: e.g. "ساعت دوازده و ربع ا"
-  2. **Half Hour (نیم ساعت)**: e.g. "ساعت دوازده و نیم ا"
-  3. **Hour (ساعت)**: e.g. "ساعت دوازده ا"
-  4. **Half Day (نیم‌روز)**: AM / PM (صبحه / شبه)
-  5. **Day / Night (روز و شب)**: Daytime vs Nighttime (روزه / شبه)
-  6. **5-Periods (بخش‌های روز)**: Morning, Noon, Afternoon, Evening, Night
-- **Beautiful Typography**: Uses the Vazirmatn font for clean, modern Arabic script rendering.
-- **Companion App Settings**: Easily switch between accuracy modes right from the Pebble mobile app.
 
-## The Technical Challenge
-Pebble OS does **not** natively support Right-To-Left (RTL) text or Arabic script context-dependent shaping. Rendering Farsi text natively results in disconnected, backward letters.
+- **Calligraphic Typography:** Custom-built using the massive, interlocking `Lalezar` and `Vazirmatn-Black` font engine for a premium, artistic look on your wrist.
+- **Dynamic Fuzzy Time:** Reads out the time exactly how Farsi speakers naturally say it (e.g., "ساعت ده و نیم", "یک ربع به شش").
+- **Multiple Accuracies:** Choose between 15-minute intervals, 30-minute intervals, exact hours, or even loose daily periods ("صبحه").
+- **Anti-Aliasing:** Harnesses Pebble's hardware and a custom grayscale layout generator to create silky smooth curves—a rarity on Pebble's 1-bit or 2-bit color space!
+- **Theme Toggle:** Instantly switch between **Dark Mode** (White on Black) and **Light Mode** (Black on White) directly from the Pebble app configuration page! No memory overhead.
 
-To solve this, this watchface:
-1. Uses a Python script to **pre-shape** and **fully reverse** every single Farsi string line by line.
-2. Manually splits strings into appropriately sized lines to avoid Pebble's Left-To-Right word wrap algorithm (which would otherwise scramble the word order of reversed text).
-3. Compiles a custom subset of the Vazirmatn font including only the exact codepoints needed to save precious RAM.
+## Screenshots
 
-## Building from Source
+<div style="display: flex; gap: 10px;">
+  <img src="screenshots/appstore/screenshot_1_dark.png" width="144" />
+  <img src="screenshots/appstore/screenshot_2_light.png" width="144" />
+  <img src="screenshots/appstore/screenshot_3_dark.png" width="144" />
+  <img src="screenshots/appstore/screenshot_4_light.png" width="144" />
+</div>
 
-1. Install the [Rebble Pebble SDK](https://help.rebble.io/sdk/).
-2. Clone this repository.
-3. If you edit the strings in the Python script, regenerate the headers and character lists:
+## Changelog
+
+### v2.8.0
+- **Feature:** Full Light/Dark theme toggle in Pebble Config app.
+- **Enhancement:** Watchface utilizes native Pebble palette manipulation for instant theme switching with 0% memory overhead.
+- **Bugfix:** Resolved `TUPLE_INT32` memory alignment issues from PebbleKit JS payload.
+- **Bugfix:** Pebble configuration page now securely caches settings via `localStorage`.
+
+### v2.6.0
+- **Redesign:** Transitioned to heavy, calligraphic typography (Vazirmatn-Black).
+- **Enhancement:** Introduced a custom Python cluster-layout algorithm to securely overlap and interlock Farsi words, creating a beautiful piece of art.
+- **Enhancement:** Enabled anti-aliasing via grayscale output to significantly improve jagged edges.
+
+### v1.0.0
+- Initial release using standard layout and fonts.
+
+## Installation
+
+Download the latest `app.pbw` from the [Releases](https://github.com/MakeAwesomeHappen/farsi_fuzzy_watchface/releases) page and sideload it to your phone using the Rebble App.
+
+## Building from source
+
+1. Run the Python generation script to create the 57 unique time states:
    ```bash
-   python3 generate_strings.py
+   python3 generate_bitmaps.py
    ```
-4. Build the watchface:
+2. Build the PBW using the Pebble SDK:
    ```bash
-   pebble build
+   docker run --rm -v "$(pwd):/app" -w /app rebble/pebble-sdk pebble build
    ```
-5. Install on your watch or emulator:
-   ```bash
-   pebble install --emulator basalt
-   ```
-
-## License
-MIT License. Feel free to fork and create your own fuzzy language variations!

@@ -1,7 +1,7 @@
 {
   "name": "farsi_fuzzy_watchface",
   "author": "MakeAwesomeHappen",
-  "version": "1.0.0",
+  "version": "2.8.0",
   "keywords": [
     "pebble-app"
   ],
@@ -25,23 +25,295 @@
       "configurable"
     ],
     "messageKeys": [
-      "AccuracyLevel"
+      "AccuracyLevel",
+      "ThemeColor"
     ],
     "resources": {
       "media": [
         {
-          "type": "font",
-          "name": "FONT_VAZIR_24",
-          "file": "fonts/Vazirmatn-Bold.ttf",
-          "compatibility": "2.7",
-          "characterList": "farsi_chars.json"
+          "type": "bitmap",
+          "name": "IMG_EXACT_0",
+          "file": "images/img_exact_0.png"
         },
         {
-          "type": "font",
-          "name": "FONT_VAZIR_BOLD_38",
-          "file": "fonts/Vazirmatn-Bold.ttf",
-          "compatibility": "2.7",
-          "characterList": "farsi_chars.json"
+          "type": "bitmap",
+          "name": "IMG_QUARTER_0",
+          "file": "images/img_quarter_0.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALF_0",
+          "file": "images/img_half_0.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_TONEXT_0",
+          "file": "images/img_tonext_0.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_EXACT_1",
+          "file": "images/img_exact_1.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_QUARTER_1",
+          "file": "images/img_quarter_1.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALF_1",
+          "file": "images/img_half_1.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_TONEXT_1",
+          "file": "images/img_tonext_1.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_EXACT_2",
+          "file": "images/img_exact_2.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_QUARTER_2",
+          "file": "images/img_quarter_2.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALF_2",
+          "file": "images/img_half_2.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_TONEXT_2",
+          "file": "images/img_tonext_2.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_EXACT_3",
+          "file": "images/img_exact_3.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_QUARTER_3",
+          "file": "images/img_quarter_3.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALF_3",
+          "file": "images/img_half_3.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_TONEXT_3",
+          "file": "images/img_tonext_3.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_EXACT_4",
+          "file": "images/img_exact_4.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_QUARTER_4",
+          "file": "images/img_quarter_4.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALF_4",
+          "file": "images/img_half_4.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_TONEXT_4",
+          "file": "images/img_tonext_4.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_EXACT_5",
+          "file": "images/img_exact_5.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_QUARTER_5",
+          "file": "images/img_quarter_5.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALF_5",
+          "file": "images/img_half_5.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_TONEXT_5",
+          "file": "images/img_tonext_5.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_EXACT_6",
+          "file": "images/img_exact_6.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_QUARTER_6",
+          "file": "images/img_quarter_6.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALF_6",
+          "file": "images/img_half_6.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_TONEXT_6",
+          "file": "images/img_tonext_6.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_EXACT_7",
+          "file": "images/img_exact_7.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_QUARTER_7",
+          "file": "images/img_quarter_7.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALF_7",
+          "file": "images/img_half_7.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_TONEXT_7",
+          "file": "images/img_tonext_7.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_EXACT_8",
+          "file": "images/img_exact_8.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_QUARTER_8",
+          "file": "images/img_quarter_8.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALF_8",
+          "file": "images/img_half_8.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_TONEXT_8",
+          "file": "images/img_tonext_8.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_EXACT_9",
+          "file": "images/img_exact_9.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_QUARTER_9",
+          "file": "images/img_quarter_9.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALF_9",
+          "file": "images/img_half_9.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_TONEXT_9",
+          "file": "images/img_tonext_9.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_EXACT_10",
+          "file": "images/img_exact_10.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_QUARTER_10",
+          "file": "images/img_quarter_10.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALF_10",
+          "file": "images/img_half_10.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_TONEXT_10",
+          "file": "images/img_tonext_10.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_EXACT_11",
+          "file": "images/img_exact_11.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_QUARTER_11",
+          "file": "images/img_quarter_11.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALF_11",
+          "file": "images/img_half_11.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_TONEXT_11",
+          "file": "images/img_tonext_11.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALFDAY_0",
+          "file": "images/img_halfday_0.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_HALFDAY_1",
+          "file": "images/img_halfday_1.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_DAYNIGHT_0",
+          "file": "images/img_daynight_0.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_DAYNIGHT_1",
+          "file": "images/img_daynight_1.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_PERIOD_0",
+          "file": "images/img_period_0.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_PERIOD_1",
+          "file": "images/img_period_1.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_PERIOD_2",
+          "file": "images/img_period_2.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_PERIOD_3",
+          "file": "images/img_period_3.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMG_PERIOD_4",
+          "file": "images/img_period_4.png"
         }
       ]
     }
